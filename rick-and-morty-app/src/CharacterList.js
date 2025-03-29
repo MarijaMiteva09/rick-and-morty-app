@@ -3,8 +3,8 @@ import { useQuery, gql } from '@apollo/client';
 
 
 const GET_CHARACTERS = gql`
-  query GetCharacters($page: Int) {
-    characters(page: $page) {
+  query GetCharacters($page: Int, $status: String, $species: String) {
+    characters(page: $page, filter: { status: $status, species: $species }) {
       results {
         id
         name
@@ -24,8 +24,11 @@ const GET_CHARACTERS = gql`
 
 const CharacterList = () => {
   const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('');
+  const [species, setSpecies] = useState('');
+
   const { loading, error, data } = useQuery(GET_CHARACTERS, {
-    variables: { page },
+    variables: { page, status, species },
   });
 
   if (loading) return <p>Loading...</p>;
@@ -33,6 +36,25 @@ const CharacterList = () => {
 
   return (
     <div>
+      <div>
+        <label>Status: </label>
+        <select onChange={(e) => setStatus(e.target.value)} value={status}>
+          <option value="">All</option>
+          <option value="Alive">Alive</option>
+          <option value="Dead">Dead</option>
+          <option value="Unknown">Unknown</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Species: </label>
+        <select onChange={(e) => setSpecies(e.target.value)} value={species}>
+          <option value="">All</option>
+          <option value="Human">Human</option>
+          <option value="Alien">Alien</option>
+        </select>
+      </div>
+
       <ul>
         {data.characters.results.map((character) => (
           <li key={character.id}>
