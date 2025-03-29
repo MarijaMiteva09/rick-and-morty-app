@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, gql } from '@apollo/client';
-import { Grid, Card, CardContent, Typography, Select, MenuItem, FormControl, InputLabel, Button, Box, CircularProgress } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // GraphQL query to fetch characters
 const GET_CHARACTERS = gql`
@@ -29,95 +29,99 @@ const CharacterList = () => {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [species, setSpecies] = useState('');
-  const [language, setLanguage] = useState('en'); // English by default
+  const [language, setLanguage] = useState('en');
 
-  const { loading, error, data } = useQuery(GET_CHARACTERS, {
+  const { loading, error, data, fetchMore } = useQuery(GET_CHARACTERS, {
     variables: { page, status, species },
   });
 
-  if (loading && page === 1) return <CircularProgress />;
-  if (error) return <p>Error: {error.message}</p>;
-
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'de' : 'en');
-  };
+  if (loading && page === 1) return <div className="text-center mt-4">Loading...</div>;
+  if (error) return <p className="text-danger">Error: {error.message}</p>;
 
   const loadMoreData = () => {
-    setPage(page + 1);
+    setPage((prevPage) => prevPage + 1);
+    fetchMore({ variables: { page: page + 1, status, species } });
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Button variant="contained" onClick={toggleLanguage} sx={{ marginBottom: 2 }}>
-        Switch to {language === 'en' ? 'German' : 'English'}
-      </Button>
+    <div className="container mt-4">
+      {/* Language Toggle Button */}
+      <div className="text-center mb-3">
+        <button className="btn btn-primary" onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}>
+          {language === 'en' ? 'Switch to German' : 'Switch to English'}
+        </button>
+      </div>
 
-      <Box sx={{ marginBottom: 2 }}>
-        <FormControl fullWidth>
-          <InputLabel>{language === 'en' ? 'Status' : 'Status'}</InputLabel>
-          <Select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            label={language === 'en' ? 'Status' : 'Status'}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Alive">{language === 'en' ? 'Alive' : 'Lebendig'}</MenuItem>
-            <MenuItem value="Dead">{language === 'en' ? 'Dead' : 'Tot'}</MenuItem>
-            <MenuItem value="Unknown">{language === 'en' ? 'Unknown' : 'Unbekannt'}</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+      {/* Filters */}
+      <div className="row mb-3">
+        <div className="col-md-6">
+          <label className="form-label">{language === 'en' ? 'Status' : 'Status'}</label>
+          <select className="form-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">{language === 'en' ? 'All' : 'Alle'}</option>
+            <option value="Alive">{language === 'en' ? 'Alive' : 'Lebendig'}</option>
+            <option value="Dead">{language === 'en' ? 'Dead' : 'Tot'}</option>
+            <option value="Unknown">{language === 'en' ? 'Unknown' : 'Unbekannt'}</option>
+          </select>
+        </div>
 
-      <Box sx={{ marginBottom: 2 }}>
-        <FormControl fullWidth>
-          <InputLabel>{language === 'en' ? 'Species' : 'Spezies'}</InputLabel>
-          <Select
-            value={species}
-            onChange={(e) => setSpecies(e.target.value)}
-            label={language === 'en' ? 'Species' : 'Spezies'}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Human">{language === 'en' ? 'Human' : 'Mensch'}</MenuItem>
-            <MenuItem value="Alien">{language === 'en' ? 'Alien' : 'Außerirdisch'}</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+        <div className="col-md-6">
+          <label className="form-label">{language === 'en' ? 'Species' : 'Spezies'}</label>
+          <select className="form-select" value={species} onChange={(e) => setSpecies(e.target.value)}>
+            <option value="">{language === 'en' ? 'All' : 'Alle'}</option>
+            <option value="Human">{language === 'en' ? 'Human' : 'Mensch'}</option>
+            <option value="Alien">{language === 'en' ? 'Alien' : 'Außerirdisch'}</option>
+          </select>
+        </div>
+      </div>
 
-      <InfiniteScroll
-        dataLength={data ? data.characters.results.length : 0}
-        next={loadMoreData}
-        hasMore={data?.characters.info.next}
-        loader={<CircularProgress />}
-        scrollThreshold={0.95}
-        scrollableTarget="scrollableDiv"
+      {/* Scrollable Character List */}
+      <div
+        id="scrollableDiv"
+        className="border p-3"
+        style={{
+          height: '500px', // Fixed height so only 6 cards are visible
+          overflowY: 'auto', // Enables internal scrolling
+        }}
       >
-        <Grid container spacing={3}>
-          {data?.characters.results.map((character) => (
-            <Grid item key={character.id} xs={12} sm={6} md={4}>
-              <Card
-                sx={{
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                    transition: 'transform 0.3s ease-in-out',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
-                  },
-                  cursor: 'pointer',
-                }}
-              >
-                <img src={character.image} alt={character.name} style={{ width: '100%' }} />
-                <CardContent>
-                  <Typography variant="h6">{character.name}</Typography>
-                  <Typography variant="body2">{language === 'en' ? 'Status' : 'Status'}: {character.status}</Typography>
-                  <Typography variant="body2">{language === 'en' ? 'Species' : 'Spezies'}: {character.species}</Typography>
-                  <Typography variant="body2">{language === 'en' ? 'Gender' : 'Geschlecht'}: {character.gender}</Typography>
-                  <Typography variant="body2">{language === 'en' ? 'Origin' : 'Herkunft'}: {character.origin.name}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </InfiniteScroll>
-    </Box>
+        <InfiniteScroll
+          dataLength={data ? data.characters.results.length : 0}
+          next={loadMoreData}
+          hasMore={data?.characters.info.next}
+          loader={<div className="text-center">Loading more...</div>}
+          scrollableTarget="scrollableDiv"
+        >
+          <div className="row">
+            {data?.characters.results.map((character) => (
+              <div key={character.id} className="col-md-4 mb-3">
+                <div className="card">
+                  <img
+                    src={character.image}
+                    alt={character.name}
+                    className="card-img-top"
+                    style={{ objectFit: 'contain', height: '200px' }} // Prevents image cropping
+                  />
+                  <div className="card-body">
+                    <h6 className="card-title">{character.name}</h6>
+                    <p className="card-text">
+                      {language === 'en' ? 'Status' : 'Status'}: {character.status}
+                    </p>
+                    <p className="card-text">
+                      {language === 'en' ? 'Species' : 'Spezies'}: {character.species}
+                    </p>
+                    <p className="card-text">
+                      {language === 'en' ? 'Gender' : 'Geschlecht'}: {character.gender}
+                    </p>
+                    <p className="card-text">
+                      {language === 'en' ? 'Origin' : 'Herkunft'}: {character.origin.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </InfiniteScroll>
+      </div>
+    </div>
   );
 };
 
