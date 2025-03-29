@@ -54,31 +54,31 @@ const CharacterList = () => {
 
       <Box sx={{ marginBottom: 2 }}>
         <FormControl fullWidth>
-          <InputLabel>Status</InputLabel>
+          <InputLabel>{language === 'en' ? 'Status' : 'Status'}</InputLabel>
           <Select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            label="Status"
+            label={language === 'en' ? 'Status' : 'Status'}
           >
             <MenuItem value="">All</MenuItem>
-            <MenuItem value="Alive">Alive</MenuItem>
-            <MenuItem value="Dead">Dead</MenuItem>
-            <MenuItem value="Unknown">Unknown</MenuItem>
+            <MenuItem value="Alive">{language === 'en' ? 'Alive' : 'Lebendig'}</MenuItem>
+            <MenuItem value="Dead">{language === 'en' ? 'Dead' : 'Tot'}</MenuItem>
+            <MenuItem value="Unknown">{language === 'en' ? 'Unknown' : 'Unbekannt'}</MenuItem>
           </Select>
         </FormControl>
       </Box>
 
       <Box sx={{ marginBottom: 2 }}>
         <FormControl fullWidth>
-          <InputLabel>Species</InputLabel>
+          <InputLabel>{language === 'en' ? 'Species' : 'Spezies'}</InputLabel>
           <Select
             value={species}
             onChange={(e) => setSpecies(e.target.value)}
-            label="Species"
+            label={language === 'en' ? 'Species' : 'Spezies'}
           >
             <MenuItem value="">All</MenuItem>
-            <MenuItem value="Human">Human</MenuItem>
-            <MenuItem value="Alien">Alien</MenuItem>
+            <MenuItem value="Human">{language === 'en' ? 'Human' : 'Mensch'}</MenuItem>
+            <MenuItem value="Alien">{language === 'en' ? 'Alien' : 'Außerirdisch'}</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -94,7 +94,16 @@ const CharacterList = () => {
         <Grid container spacing={3}>
           {data?.characters.results.map((character) => (
             <Grid item key={character.id} xs={12} sm={6} md={4}>
-              <Card>
+              <Card
+                sx={{
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    transition: 'transform 0.3s ease-in-out',
+                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+                  },
+                  cursor: 'pointer',
+                }}
+              >
                 <img src={character.image} alt={character.name} style={{ width: '100%' }} />
                 <CardContent>
                   <Typography variant="h6">{character.name}</Typography>
