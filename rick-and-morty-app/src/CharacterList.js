@@ -30,6 +30,7 @@ const CharacterList = () => {
   const [status, setStatus] = useState('');
   const [species, setSpecies] = useState('');
   const [language, setLanguage] = useState('en');
+  const [sort, setSort] = useState('');
 
   const { loading, error, data, fetchMore } = useQuery(GET_CHARACTERS, {
     variables: { page, status, species },
@@ -38,6 +39,16 @@ const CharacterList = () => {
   if (loading && page === 1) return <div className="text-center mt-4">Loading...</div>;
   if (error) return <p className="text-danger">Error: {error.message}</p>;
 
+  // Handle client-side sorting by Name or Origin
+  const sortedCharacters = data?.characters.results.slice().sort((a, b) => {
+    if (sort === 'name') {
+      return a.name.localeCompare(b.name);
+    } else if (sort === 'origin') {
+      return a.origin.name.localeCompare(b.origin.name);
+    }
+    return 0; // No sorting if no sort option selected
+  });
+
   const loadMoreData = () => {
     setPage((prevPage) => prevPage + 1);
     fetchMore({ variables: { page: page + 1, status, species } });
@@ -45,16 +56,9 @@ const CharacterList = () => {
 
   return (
     <div className="container mt-4">
-      {/* Language Toggle Button */}
-      <div className="text-center mb-3">
-        <button className="btn btn-primary" onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}>
-          {language === 'en' ? 'Switch to German' : 'Switch to English'}
-        </button>
-      </div>
-
       {/* Filters */}
       <div className="row mb-3">
-        <div className="col-md-6">
+        <div className="col-md-4">
           <label className="form-label">{language === 'en' ? 'Status' : 'Status'}</label>
           <select className="form-select" value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">{language === 'en' ? 'All' : 'Alle'}</option>
@@ -64,12 +68,35 @@ const CharacterList = () => {
           </select>
         </div>
 
-        <div className="col-md-6">
+        <div className="col-md-4">
           <label className="form-label">{language === 'en' ? 'Species' : 'Spezies'}</label>
           <select className="form-select" value={species} onChange={(e) => setSpecies(e.target.value)}>
             <option value="">{language === 'en' ? 'All' : 'Alle'}</option>
             <option value="Human">{language === 'en' ? 'Human' : 'Mensch'}</option>
             <option value="Alien">{language === 'en' ? 'Alien' : 'Außerirdisch'}</option>
+          </select>
+        </div>
+
+        <div className="col-md-4">
+          {/* Language Switcher Button */}
+          <label className="form-label">{language === 'en' ? 'Language' : 'Sprache'}</label>
+          <button
+            className="btn btn-primary w-100"
+            onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
+          >
+            {language === 'en' ? 'Switch to German' : 'Switch to English'}
+          </button>
+        </div>
+      </div>
+
+      {/* Sorting Dropdown */}
+      <div className="row mb-3">
+        <div className="col-md-6">
+          <label className="form-label">{language === 'en' ? 'Sort By' : 'Sortieren nach'}</label>
+          <select className="form-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="">{language === 'en' ? 'None' : 'Keiner'}</option>
+            <option value="name">{language === 'en' ? 'Name' : 'Name'}</option>
+            <option value="origin">{language === 'en' ? 'Origin' : 'Herkunft'}</option>
           </select>
         </div>
       </div>
@@ -84,14 +111,14 @@ const CharacterList = () => {
         }}
       >
         <InfiniteScroll
-          dataLength={data ? data.characters.results.length : 0}
+          dataLength={sortedCharacters ? sortedCharacters.length : 0}
           next={loadMoreData}
           hasMore={data?.characters.info.next}
           loader={<div className="text-center">Loading more...</div>}
           scrollableTarget="scrollableDiv"
         >
           <div className="row">
-            {data?.characters.results.map((character) => (
+            {sortedCharacters?.map((character) => (
               <div key={character.id} className="col-md-4 mb-3">
                 <div className="card">
                   <img

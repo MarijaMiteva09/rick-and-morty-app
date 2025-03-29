@@ -7,7 +7,14 @@ function App() {
   return (
     <ApolloProvider client={client}>
       <div className="App">
-        <h1>Rick and Morty Characters</h1>
+        <h1 style={{ 
+          textAlign: 'center', 
+          fontFamily: '"Bangers", sans-serif', 
+          fontSize: '3rem', 
+          color: 'black' // You can customize the color too
+        }}>
+          Rick and Morty Characters
+        </h1>
         <CharacterList /> 
       </div>
     </ApolloProvider>
